@@ -6,7 +6,7 @@ from django.utils import timezone
 class Company(models.Model):
     name = models.CharField(max_length=255)
     country = models.CharField(max_length=100)
-    currency = models.CharField(max_length=10)
+    currency = models.CharField(max_length=10, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -14,6 +14,7 @@ class Company(models.Model):
     
     def __str__(self):
         return self.name or "Unnamed Company"
+
 
 # --- Custom User ---
 class CustomUser(AbstractUser):
@@ -27,18 +28,13 @@ class CustomUser(AbstractUser):
         Group,
         related_name='expensemanagementapp_user_set',
         blank=True,
-        help_text='The groups this user belongs to.',
-        verbose_name='groups',
     )
     user_permissions = models.ManyToManyField(
         Permission,
         related_name='expensemanagementapp_user_permissions_set',
         blank=True,
-        help_text='Specific permissions for this user.',
-        verbose_name='user permissions',
     )
 
-    # Temporarily allow null to avoid superuser creation error
     company = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
@@ -57,6 +53,22 @@ class CustomUser(AbstractUser):
     
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
+
+    # 🔹 Helper for Manager Dashboard
+    def get_team_expenses(self):
+        """Return all team expenses for manager or all company expenses for admin."""
+        from .models import Expense
+        if self.role == 'manager':
+            return Expense.objects.filter(employee__manager=self)
+        elif self.role == 'admin':
+            return Expense.objects.filter(company=self.company)
+        return Expense.objects.none()
+    
+    def get_pending_approvals(self):
+        """Return expenses pending for this user’s approval."""
+        from .models import ExpenseApproval
+        return ExpenseApproval.objects.filter(approver=self, status='pending')
+
 
 # --- Approval Workflow ---
 class ApprovalRule(models.Model):
@@ -85,6 +97,7 @@ class ApprovalRule(models.Model):
     def __str__(self):
         return f"{self.name} ({self.get_rule_type_display()})"
 
+
 class ApprovalStep(models.Model):
     approval_rule = models.ForeignKey(ApprovalRule, on_delete=models.CASCADE, related_name='steps')
     approver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='approval_steps', null=True)
@@ -97,6 +110,7 @@ class ApprovalStep(models.Model):
     def __str__(self):
         username = self.approver.username if self.approver else "Unknown"
         return f"Step {self.sequence}: {username}"
+
 
 # --- Expense Models ---
 class Expense(models.Model):
@@ -119,7 +133,7 @@ class Expense(models.Model):
     employee = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='expenses', null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='expenses', null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.CharField(max_length=10)
+    currency = models.CharField(max_length=10, null=True, blank=True)
     amount_in_company_currency = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     description = models.TextField()
@@ -138,6 +152,7 @@ class Expense(models.Model):
     def __str__(self):
         username = self.employee.username if self.employee else "Unknown"
         return f"{username} - {self.amount} {self.currency} - {self.category}"
+
 
 class ExpenseApproval(models.Model):
     STATUS_CHOICES = [

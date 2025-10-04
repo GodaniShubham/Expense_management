@@ -20,5 +20,7 @@ urlpatterns = [
     path('create-approval-rule/', views.create_approval_rule, name='create_approval_rule'),
     path('api/countries/', views.get_countries, name='get_countries'),
     path('api/ocr-scan/', views.ocr_scan, name='ocr_scan'),
+    path('approve/<int:expense_id>/', views.approve_expense, name='approve_expense'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

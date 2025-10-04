@@ -1,161 +1,149 @@
 {% extends 'base.html' %}
-
-{% block title %}Manager Dashboard - Expense Management{% endblock %}
-
+{% block title %}Manager Dashboard{% endblock %}
 {% block content %}
-<div class="space-y-8">
-    <!-- Header Section -->
-    <div class="relative overflow-hidden rounded-xl shadow-lg bg-gradient-to-r from-slate-800 via-slate-700 to-slate-900 text-white p-8">
-        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dark-mosaic.png')] opacity-10"></div>
-        <div class="relative z-10">
-            <h1 class="text-4xl font-bold tracking-tight mb-2 flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m2 0a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v3a2 2 0 002 2m10 0v5a2 2 0 01-2 2H9a2 2 0 01-2-2v-5" />
-                </svg>
-                Manager Dashboard
-            </h1>
-            <p class="text-slate-300 text-sm">Monitor and approve expense requests from your team with ease.</p>
+
+<div class="min-h-screen bg-white text-gray-900 p-8 font-['Patrick_Hand',cursive]">
+
+    <!-- Header -->
+    <div class="flex items-center gap-3 mb-8">
+        <div class="bg-green-200 text-green-900 px-3 py-1 rounded-full text-sm font-semibold shadow">
+            Joyous Parrot
         </div>
+        <h1 class="text-3xl font-bold tracking-wide">Manager’s Dashboard</h1>
     </div>
 
-    <!-- Overview Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition duration-300 p-6 relative overflow-hidden">
-            <div class="absolute right-0 top-0 w-24 h-24 bg-amber-50 rounded-bl-full"></div>
-            <div class="relative z-10 flex justify-between items-center">
-                <div>
-                    <p class="text-sm text-gray-500">Pending Approvals</p>
-                    <h2 class="text-4xl font-bold text-gray-900 mt-2">{{ pending_approvals.count }}</h2>
-                </div>
-                <div class="bg-amber-100 p-3 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-500 animate-spin-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6 1A9 9 0 1112 3v1" />
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition duration-300 p-6 relative overflow-hidden">
-            <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-50 rounded-bl-full"></div>
-            <div class="relative z-10 flex justify-between items-center">
-                <div>
-                    <p class="text-sm text-gray-500">Team Expenses</p>
-                    <h2 class="text-4xl font-bold text-gray-900 mt-2">{{ team_expenses.count }}</h2>
-                </div>
-                <div class="bg-indigo-100 p-3 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 018 0v2m4 0v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2m16-5a4 4 0 00-8 0" />
-                    </svg>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Pending Approvals Section -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6 1A9 9 0 1112 3v1" />
-            </svg>
-            Pending Approvals
-        </h2>
-
-        {% if pending_approvals %}
-        <div class="space-y-4">
-            {% for approval in pending_approvals %}
-            <div class="border border-gray-200 rounded-lg p-5 hover:shadow-lg transition duration-300 bg-gradient-to-r from-white via-gray-50 to-gray-100">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900">{{ approval.expense.category }}</h3>
-                        <p class="text-sm text-gray-600 mt-1">
-                            Submitted by <span class="font-medium text-gray-900">{{ approval.expense.employee.username }}</span>
-                        </p>
-                        <p class="text-sm text-gray-500 mt-1">{{ approval.expense.description|truncatewords:15 }}</p>
-                        <div class="flex items-center space-x-4 mt-2">
-                            <span class="text-lg font-bold text-gray-900">
-                                {{ approval.expense.amount }} {{ approval.expense.currency }}
-                            </span>
-                            <span class="text-sm text-gray-500">
-                                {{ approval.expense.expense_date|date:"M d, Y" }}
-                            </span>
-                        </div>
-                    </div>
-                    <div>
-                        <a href="{% url 'approve_expense' approval.expense.id %}"
-                           class="px-5 py-2 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-indigo-600 transition duration-300">
-                           Review
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
+    <!-- Debug Section (Temporary) -->
+    <div class="mb-4 p-4 bg-gray-100 rounded-lg">
+        <p>Debug: Number of visible expenses = {{ visible_expenses|length }}</p>
+        {% if visible_expenses %}
+            <p>Debug: First expense employee = {{ visible_expenses.0.employee.username|default:'No employee' }}</p>
         {% else %}
-        <div class="text-center py-12">
-            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-14 w-14 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2l4-4m6 2a9 9 0 11-18 0a9 9 0 0118 0z" />
-            </svg>
-            <p class="text-gray-500 mt-3 text-lg">No pending approvals. You're all caught up!</p>
-        </div>
+            <p>Debug: No expenses found in visible_expenses.</p>
         {% endif %}
     </div>
 
-    <!-- Team Expenses Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 018 0v2m4 0v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2m16-5a4 4 0 00-8 0" />
-            </svg>
-            Team Expenses
-        </h2>
+    <!-- Pending Approvals -->
+    <div class="border-2 border-gray-300 rounded-3xl p-8 bg-white shadow-lg mb-10">
+        <h2 class="text-2xl mb-6 font-semibold">Pending Approvals</h2>
 
-        {% if team_expenses %}
         <div class="overflow-x-auto">
-            <table class="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+            <table class="min-w-full border border-gray-300 rounded-xl">
                 <thead class="bg-gray-100">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Employee</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Category</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Amount</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                    <tr class="text-left border-b border-gray-300 text-gray-700">
+                        <th class="py-3 px-4">Subject</th>
+                        <th class="py-3 px-4">Employee</th>
+                        <th class="py-3 px-4">Category</th>
+                        <th class="py-3 px-4">Amount</th>
+                        <th class="py-3 px-4">Currency</th>
+                        <th class="py-3 px-4 text-center">Action</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for expense in team_expenses %}
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ expense.employee.username }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ expense.category }}</td>
-                        <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ expense.amount }} {{ expense.currency }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-500">{{ expense.expense_date|date:"M d, Y" }}</td>
-                        <td class="px-4 py-3 text-sm">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                {% if expense.status == 'approved' %}bg-green-100 text-green-700
-                                {% elif expense.status == 'rejected' %}bg-red-100 text-red-700
-                                {% elif expense.status == 'pending' %}bg-yellow-100 text-yellow-700
-                                {% else %}bg-gray-100 text-gray-700{% endif %}">
-                                {{ expense.status|title }}
-                            </span>
+                <tbody>
+                    {% for approval in pending_approvals %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                        <td class="py-3 px-4">{{ approval.expense.description|truncatechars:25 }}</td>
+                        <td class="py-3 px-4">{{ approval.expense.employee.username }}</td>
+                        <td class="py-3 px-4">{{ approval.expense.get_category_display }}</td>
+                        <td class="py-3 px-4">{{ approval.expense.amount }}</td>
+                        <td class="py-3 px-4">{{ approval.expense.currency }}</td>
+                        <td class="py-3 px-4 text-center">
+                            <form method="post" action="{% url 'approve_expense' approval.expense.id %}" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit"
+                                    class="border-2 border-green-500 text-green-600 rounded-lg px-4 py-1 font-semibold hover:bg-green-500 hover:text-white transition">
+                                    Approve
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'approve_expense' approval.expense.id %}" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit"
+                                    class="border-2 border-red-500 text-red-600 rounded-lg px-4 py-1 font-semibold hover:bg-red-500 hover:text-white transition">
+                                    Reject
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-10 text-gray-500 italic">
+                            🎉 No pending approvals — everything’s up to date!
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        {% else %}
-        <p class="text-gray-500 text-center py-8">No team expenses to display.</p>
-        {% endif %}
     </div>
+
+    <!-- All Submitted Employee Expenses -->
+    <div class="border-2 border-gray-300 rounded-3xl p-8 bg-white shadow-lg">
+        <h2 class="text-2xl mb-6 font-semibold">All Submitted Employee Expenses</h2>
+
+        <div class="overflow-x-auto">
+            {% if visible_expenses %}
+            <table class="min-w-full border border-gray-300 rounded-xl">
+                <thead class="bg-gray-100">
+                    <tr class="text-left border-b border-gray-300 text-gray-700">
+                        <th class="py-3 px-4">Employee</th>
+                        <th class="py-3 px-4">Description</th>
+                        <th class="py-3 px-4">Category</th>
+                        <th class="py-3 px-4">Amount</th>
+                        <th class="py-3 px-4">Currency</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exp in visible_expenses %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                        <td class="py-3 px-4">{{ exp.employee.username }}</td>
+                        <td class="py-3 px-4">{{ exp.description|truncatechars:25 }}</td>
+                        <td class="py-3 px-4">{{ exp.get_category_display }}</td>
+                        <td class="py-3 px-4">{{ exp.amount }}</td>
+                        <td class="py-3 px-4">{{ exp.currency }}</td>
+                        <td class="py-3 px-4">
+                            {% if exp.status == 'approved' %}
+                            <span class="text-green-600 font-semibold">Approved</span>
+                            {% elif exp.status == 'rejected' %}
+                            <span class="text-red-600 font-semibold">Rejected</span>
+                            {% else %}
+                            <span class="text-yellow-600 font-semibold">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4">{{ exp.expense_date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-center py-10 text-gray-500 italic">
+                No employee expenses submitted yet.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Footer Label -->
+    <div class="flex justify-end mt-6">
+        <div class="bg-amber-200 text-amber-900 px-3 py-1 rounded-full text-sm font-semibold shadow">
+            Glorious Finch
+        </div>
+    </div>
+
 </div>
 
-<style>
-/* Custom slow animation */
-@keyframes spin-slow {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-.animate-spin-slow {
-    animation: spin-slow 6s linear infinite;
-}
-</style>
+<!-- Confirmation Popup -->
+<script>
+document.querySelectorAll("form").forEach(form => {
+    form.addEventListener("submit", (e) => {
+        const action = form.querySelector("input[name='action']").value;
+        if (!confirm(`Are you sure you want to ${action} this expense?`)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
 {% endblock %}

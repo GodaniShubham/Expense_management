@@ -22,39 +22,37 @@ def signup_view(request):
         country = request.POST.get('country')
         currency = request.POST.get('currency')
         role = request.POST.get('role')
+        manager_id = request.POST.get('manager_id')  # Add manager selection
 
-        # Validate role
         valid_roles = ['employee', 'manager', 'admin']
         if role not in valid_roles:
             messages.error(request, 'Invalid role selected.')
             return render(request, 'signup.html')
 
-        # Duplicate check
         if CustomUser.objects.filter(username=username).exists():
             messages.error(request, f'Username "{username}" already exists. Choose a different one.')
             return render(request, 'signup.html')
 
-        # Create company
         company = Company.objects.create(
             name=company_name,
             country=country,
             currency=currency
         )
 
-        # Create user with selected role
+        # Fetch manager only if role is employee and manager_id is provided
+        manager = CustomUser.objects.filter(id=manager_id).first() if manager_id and role == 'employee' else None
         user = CustomUser.objects.create_user(
             username=username,
             email=email,
             password=password,
             company=company,
-            role=role  # Use the role from the form
+            role=role,
+            manager=manager
         )
 
-        # Log in the user
         login(request, user)
         messages.success(request, 'Account created successfully!')
 
-        # Redirect based on role
         if role == 'admin':
             return redirect('admin_dashboard')
         elif role == 'manager':
@@ -62,7 +60,12 @@ def signup_view(request):
         else:
             return redirect('employee_dashboard')
 
-    return render(request, 'signup.html')
+    # Fetch managers from the same company if user is logged in, otherwise all managers
+    managers = CustomUser.objects.filter(role='manager')
+    if request.user.is_authenticated:
+        managers = managers.filter(company=request.user.company)
+    return render(request, 'signup.html', {'managers': managers})
+
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -110,22 +113,38 @@ def admin_dashboard(request):
 
 @login_required
 def manager_dashboard(request):
-    if request.user.role not in ['manager', 'admin']:
+    user = request.user
+
+    if user.role not in ['manager', 'admin']:
         messages.error(request, 'Access denied')
         return redirect('dashboard')
-    
+
+    # Pending approvals assigned to this manager
     pending_approvals = ExpenseApproval.objects.filter(
-        approver=request.user,
+        approver=user,
         status='pending'
-    )
-    
-    team_expenses = Expense.objects.filter(
-        employee__manager=request.user
-    ) if request.user.role == 'manager' else Expense.objects.filter(company=request.user.company)
-    
+    ).select_related('expense', 'approver', 'expense__employee')
+
+    # Fetch all expenses submitted by employees under this manager or all company expenses for admin
+    if user.role == 'manager':
+        # Get all employees under this manager, including indirect reports if needed
+        employees = CustomUser.objects.filter(manager=user)
+        visible_expenses = Expense.objects.filter(employee__in=employees).select_related('employee', 'company')
+        if not visible_expenses.exists() and employees.exists():
+            # Fallback to check if any expenses are missing due to relationship issues
+            visible_expenses = Expense.objects.filter(company=user.company).select_related('employee', 'company')
+    else:
+        visible_expenses = Expense.objects.filter(company=user.company).select_related('employee', 'company')
+
+    # Enhanced debug output
+    print(f"Manager: {user.username}")
+    print(f"Employees under manager: {list(employees.values_list('username', flat=True)) if user.role == 'manager' else 'N/A (Admin)'}")
+    print(f"Visible expenses query: {visible_expenses.query}")
+    print(f"Number of visible expenses: {visible_expenses.count()}")
+
     context = {
         'pending_approvals': pending_approvals,
-        'team_expenses': team_expenses[:10],
+        'visible_expenses': visible_expenses,
     }
     return render(request, 'manager_dashboard.html', context)
 
@@ -150,16 +169,12 @@ def create_employee(request):
         role = request.POST.get('role')
         manager_id = request.POST.get('manager_id')
 
-        # Duplicate username check
         if CustomUser.objects.filter(username=username).exists():
             messages.error(request, f'Username "{username}" already exists. Choose a different one.')
-            return redirect('create_employee')  # redirect to form
+            return redirect('create_employee')
         
-        manager = None
-        if manager_id:
-            manager = CustomUser.objects.get(id=manager_id)
+        manager = CustomUser.objects.get(id=manager_id) if manager_id and role == 'employee' else None
         
-        # Safe user creation
         user = CustomUser.objects.create_user(
             username=username,
             email=email,
@@ -174,7 +189,6 @@ def create_employee(request):
     
     managers = CustomUser.objects.filter(company=request.user.company, role='manager')
     return render(request, 'create_employee.html', {'managers': managers})
-
 
 @login_required
 def submit_expense(request):
@@ -194,7 +208,6 @@ def submit_expense(request):
         company_currency = request.user.company.currency
         amount_in_company_currency = convert_currency(float(amount), currency, company_currency)
 
-        # Expense created as pending
         expense = Expense.objects.create(
             employee=request.user,
             company=request.user.company,
@@ -206,20 +219,27 @@ def submit_expense(request):
             merchant_name=merchant_name,
             expense_date=expense_date,
             receipt_image=receipt_image,
-            status='pending',  # always pending initially
+            status='pending',
             current_step=0
         )
 
-        # Create approval workflow (manager/admin)
-        create_approval_workflow(expense)
+        # Ensure approval workflow is created even if manager is not set initially
+        if request.user.manager:
+            ExpenseApproval.objects.create(
+                expense=expense,
+                approver=request.user.manager,
+                step_number=1,
+                status='pending'
+            )
+            expense.current_step = 1
+            expense.save()
+        else:
+            messages.warning(request, 'No manager assigned. Contact admin to assign a manager.')
 
         messages.success(request, '✅ Expense submitted successfully and is now pending approval.')
         return redirect('employee_dashboard')
 
     return render(request, 'submit_expense.html')
-
-
-
 
 @login_required
 def ocr_scan(request):
@@ -347,90 +367,51 @@ def convert_currency(amount, from_currency, to_currency):
         return Decimal(amount)
 
 def create_approval_workflow(expense):
-    rules = ApprovalRule.objects.filter(company=expense.company, is_active=True).first()
-    
-    if not rules:
-        expense.status = 'approved'
-        expense.save()
-        return
-    
-    expense.approval_rule = rules
-    expense.save()
-    
-    step_number = 1
-    
-    if rules.is_manager_first and expense.employee.manager:
+    if expense.employee.manager:
         ExpenseApproval.objects.create(
             expense=expense,
             approver=expense.employee.manager,
-            step_number=step_number,
+            step_number=1,
             status='pending'
         )
-        step_number += 1
-    
-    for step in rules.steps.all():
-        ExpenseApproval.objects.create(
-            expense=expense,
-            approver=step.approver,
-            step_number=step_number,
-            status='pending'
-        )
-        step_number += 1
+        expense.current_step = 1
+        expense.save()
+    else:
+        messages.warning(request, 'No manager assigned. Please contact admin for approval setup.')
+        return
+
+    rules = ApprovalRule.objects.filter(company=expense.company, is_active=True).first()
+    if rules and rules.steps.exists():
+        step_number = 2
+        for step in rules.steps.all().order_by('sequence'):
+            ExpenseApproval.objects.create(
+                expense=expense,
+                approver=step.approver,
+                step_number=step_number,
+                status='pending'
+            )
+            step_number += 1
+        expense.approval_rule = rules
+        expense.save()
 
 def process_approval_workflow(expense):
-    rule = expense.approval_rule
-    
-    if not rule:
-        expense.status = 'approved'
-        expense.save()
-        return
-    
     current_approvals = ExpenseApproval.objects.filter(expense=expense, status='approved')
     total_approvals = ExpenseApproval.objects.filter(expense=expense).count()
-    
-    if rule.rule_type == 'sequential':
-        all_approvals = ExpenseApproval.objects.filter(expense=expense).order_by('step_number')
-        for approval in all_approvals:
-            if approval.status == 'pending':
-                return
-            elif approval.status == 'rejected':
-                expense.status = 'rejected'
-                expense.save()
-                return
-        expense.status = 'approved'
-        expense.save()
-        return
-    
-    if rule.rule_type == 'specific' and rule.specific_approver:
-        if current_approvals.filter(approver=rule.specific_approver).exists():
-            expense.status = 'approved'
-            expense.save()
-            return
-    
-    if rule.rule_type == 'percentage' and rule.percentage_threshold:
-        approval_percentage = (current_approvals.count() / total_approvals) * 100
-        if approval_percentage >= rule.percentage_threshold:
-            expense.status = 'approved'
-            expense.save()
-            return
-    
-    if rule.rule_type == 'hybrid':
-        if rule.specific_approver and current_approvals.filter(approver=rule.specific_approver).exists():
-            expense.status = 'approved'
-            expense.save()
-            return
-        
-        if rule.percentage_threshold:
-            approval_percentage = (current_approvals.count() / total_approvals) * 100
-            if approval_percentage >= rule.percentage_threshold:
-                expense.status = 'approved'
-                expense.save()
-                return
-    
     pending_approvals = ExpenseApproval.objects.filter(expense=expense, status='pending')
+
     if not pending_approvals.exists():
-        if current_approvals.count() == total_approvals:
+        if current_approvals.count() == total_approvals and expense.employee.manager in current_approvals.values_list('approver', flat=True):
             expense.status = 'approved'
+            expense.save()
+            messages.success(request, 'Expense fully approved.')
+        elif current_approvals.filter(status='rejected').exists():
+            expense.status = 'rejected'
+            expense.save()
+            messages.success(request, 'Expense rejected.')
+    else:
+        current_step = expense.current_step
+        if current_approvals.filter(step_number=current_step).exists():
+            expense.current_step += 1
             expense.save()
 
 def parse_receipt_text(text):

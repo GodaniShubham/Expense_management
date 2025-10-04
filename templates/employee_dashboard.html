@@ -4,95 +4,148 @@
 
 {% block content %}
 <div class="space-y-6">
-    <div class="bg-gradient-to-r from-green-600 to-teal-600 rounded-xl shadow-lg p-6 text-white">
-        <h1 class="text-3xl font-bold mb-2">👤 My Dashboard</h1>
-        <p class="text-green-100">Track and manage your expense submissions.</p>
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-green-600 to-teal-600 rounded-xl shadow-lg p-6 text-white flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">My Dashboard</h1>
+            <p class="text-green-100">Track and manage your expense submissions.</p>
+        </div>
+        <!-- Briefcase Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" 
+             class="w-12 h-12 text-white transition transform hover:rotate-6 hover:scale-110" 
+             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-9 0H4v8h16v-8h-3m-4-8h2a2 2 0 012 2v2H9V6a2 2 0 012-2z" />
+        </svg>
     </div>
 
+    <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-            <div class="flex items-center justify-between">
+        <!-- Total Expenses -->
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500 transform hover:scale-105 transition duration-300 ease-in-out">
+            <div class="flex items-center space-x-4">
+                <div class="bg-blue-100 p-3 rounded-full text-blue-600 animate-pulse">
+                    <!-- Chart Bar Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v18h18M9 9v6m4-10v10m4-6v6" />
+                    </svg>
+                </div>
                 <div>
                     <p class="text-sm font-medium text-gray-600">Total Expenses</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ my_expenses.count }}</p>
                 </div>
-                <div class="text-4xl">📝</div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
-            <div class="flex items-center justify-between">
+        <!-- Pending -->
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500 transform hover:scale-105 transition duration-300 ease-in-out">
+            <div class="flex items-center space-x-4">
+                <div class="bg-yellow-100 p-3 rounded-full text-yellow-600 animate-spin">
+                    <!-- Clock Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
                 <div>
                     <p class="text-sm font-medium text-gray-600">Pending</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">
-                        {% for expense in my_expenses %}{% if expense.status == 'pending' %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}{% empty %}0{% endfor %}
+                        {{ my_expenses|length|default:"0" }}
                     </p>
                 </div>
-                <div class="text-4xl">⏳</div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
-            <div class="flex items-center justify-between">
+        <!-- Approved -->
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500 transform hover:scale-105 transition duration-300 ease-in-out">
+            <div class="flex items-center space-x-4">
+                <div class="bg-green-100 p-3 rounded-full text-green-600 animate-bounce">
+                    <!-- Check Circle Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
                 <div>
                     <p class="text-sm font-medium text-gray-600">Approved</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">
-                        {% for expense in my_expenses %}{% if expense.status == 'approved' %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}{% empty %}0{% endfor %}
+                        {{ my_expenses|length|default:"0" }}
                     </p>
                 </div>
-                <div class="text-4xl">✅</div>
             </div>
         </div>
     </div>
 
+    <!-- Submit Button -->
     <div class="flex justify-end">
         <a href="{% url 'submit_expense' %}" 
-            class="px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 transition font-semibold shadow-lg transform hover:scale-105">
-            ➕ Submit New Expense
+            class="px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 transition font-semibold shadow-lg transform hover:scale-110 hover:rotate-1 duration-300 flex items-center space-x-2">
+            <!-- Plus Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Submit New Expense</span>
         </a>
     </div>
 
+    <!-- Table -->
     <div class="bg-white rounded-xl shadow-md p-6">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">📊 My Expenses</h2>
-        
+        <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center space-x-2">
+            <!-- Document Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2-12H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2z" />
+            </svg>
+            <span>My Expenses</span>
+        </h2>
+
         {% if my_expenses %}
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 border rounded-lg">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receipt</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase flex items-center space-x-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                            </svg>
+                            <span>Category</span>
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Description</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Amount</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Receipt</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white divide-y divide-gray-100">
                     {% for expense in my_expenses %}
-                    <tr class="hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50 transition transform hover:scale-[1.01]">
                         <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                             {{ expense.category }}
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-500">
-                            <div class="max-w-xs truncate">{{ expense.description }}</div>
+                        <td class="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">
+                            {{ expense.description }}
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                             {{ expense.amount }} {{ expense.currency }}
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                             {{ expense.expense_date|date:"M d, Y" }}
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm">
-                            <span class="px-2 py-1 text-xs rounded-full {% if expense.status == 'approved' %}bg-green-100 text-green-800{% elif expense.status == 'rejected' %}bg-red-100 text-red-800{% elif expense.status == 'pending' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                            <span class="px-3 py-1 text-xs rounded-full font-medium shadow-sm
+                                {% if expense.status == 'approved' %} bg-green-100 text-green-800 
+                                {% elif expense.status == 'rejected' %} bg-red-100 text-red-800
+                                {% elif expense.status == 'pending' %} bg-yellow-100 text-yellow-800 animate-pulse
+                                {% else %} bg-blue-100 text-blue-800 {% endif %}">
                                 {{ expense.status|title }}
                             </span>
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm">
                             {% if expense.receipt_image %}
                             <a href="{{ expense.receipt_image.url }}" target="_blank" 
-                                class="text-blue-600 hover:text-blue-800">
-                                📎 View
+                                class="text-blue-600 hover:text-blue-800 font-medium underline hover:scale-110 transition inline-flex items-center space-x-1">
+                                <!-- Link Icon -->
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2V4m0 8v8" />
+                                </svg>
+                                <span>View</span>
                             </a>
                             {% else %}
                             <span class="text-gray-400">No receipt</span>
@@ -105,11 +158,17 @@
         </div>
         {% else %}
         <div class="text-center py-12">
-            <div class="text-6xl mb-4">💼</div>
+            <!-- Folder Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto text-gray-400 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h4l2-2h6l2 2h4v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+            </svg>
             <p class="text-gray-500 text-lg mb-4">You haven't submitted any expenses yet.</p>
             <a href="{% url 'submit_expense' %}" 
-                class="inline-block px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
-                Submit Your First Expense
+                class="inline-block px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold transform hover:scale-110 flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Submit Your First Expense</span>
             </a>
         </div>
         {% endif %}
