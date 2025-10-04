@@ -125,7 +125,7 @@
         const approversList = document.getElementById('approversList');
         const addApproverBtn = document.getElementById('addApprover');
         
-        const employees = {{ employees|safe|default:"[]" }};
+        // ✅ Proper JSON serialization using Django loop
         const employeesJson = [
             {% for employee in employees %}
             {id: {{ employee.id }}, username: "{{ employee.username }}", role: "{{ employee.role }}"}{% if not forloop.last %},{% endif %}
