@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,7 +39,57 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ExpenseManagement_app',
+    
 ]
+
+# Jazzmin settings
+JAZZMIN_SETTINGS = {
+    "site_title": "E-Expense Admin",
+    "site_header": "Expense Management",
+    "site_brand": "ExpenseMgmt",
+    "welcome_sign": "Welcome to Expense Management Admin",
+    "copyright": "Rajveersinh Karansinh © 2025",
+    "search_model": "ExpenseManagement_app.expense",
+    
+    "user_avatar": "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+    
+    "topmenu_links": [
+        {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"model": "auth.user"},
+        {"app": "ExpenseManagement_app"},
+    ],
+
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+    
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "ExpenseManagement_app.expense": "fas fa-receipt",
+        "ExpenseManagement_app.company": "fas fa-building",
+        "ExpenseManagement_app.customuser": "fas fa-user",
+        "ExpenseManagement_app.approvalrule": "fas fa-tasks",
+        "ExpenseManagement_app.expenseapproval": "fas fa-check-circle",
+    },
+
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+}
+
+# Jazzmin theme colors
+JAZZMIN_UI_TWEAKS = {
+    "theme": "darkly",  # Bootswatch theme, options: darkly, flatly, cerulean, etc.
+    "navbar_small_text": False,
+    "footer_small_text": True,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "actions_small_text": False,
+    "accent": "accent-primary",
+    "navbar": "navbar-dark bg-primary",
+    "footer": "footer-dark bg-dark",
+    "sidebar": "sidebar-dark-primary",
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -117,16 +168,22 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-STATIC_URL = '/static/'
 
-# Add these new lines
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-)
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'ExpenseManagement_app.CustomUser'
+
+# Authentication URLs
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'login'

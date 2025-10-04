@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Approve Expense - Expense Management{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">👁️ Review Expense</h1>
+            <p class="text-gray-600">Review the expense details and provide your approval decision.</p>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-gray-50 rounded-lg p-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Submitted By</h3>
+                        <p class="text-lg font-semibold text-gray-900">👤 {{ expense.employee.username }}</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Current Status</h3>
+                        <span class="inline-block px-3 py-1 text-sm rounded-full {% if expense.status == 'approved' %}bg-green-100 text-green-800{% elif expense.status == 'rejected' %}bg-red-100 text-red-800{% elif expense.status == 'pending' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                            {{ expense.status|title }}
+                        </span>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Category</h3>
+                        <p class="text-lg font-semibold text-gray-900">📂 {{ expense.category }}</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Amount</h3>
+                        <p class="text-lg font-bold text-green-600">💰 {{ expense.amount }} {{ expense.currency }}</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Expense Date</h3>
+                        <p class="text-lg text-gray-900">📅 {{ expense.expense_date|date:"F d, Y" }}</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Submitted On</h3>
+                        <p class="text-lg text-gray-900">🕒 {{ expense.created_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                    
+                    {% if expense.merchant_name %}
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Merchant</h3>
+                        <p class="text-lg text-gray-900">🏪 {{ expense.merchant_name }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 mb-2">Description</h3>
+                    <p class="text-gray-900 bg-white p-4 rounded-lg border border-gray-200">{{ expense.description }}</p>
+                </div>
+                
+                {% if expense.receipt_image %}
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500 mb-2">Receipt</h3>
+                    <div class="border border-gray-300 rounded-lg overflow-hidden inline-block">
+                        <a href="{{ expense.receipt_image.url }}" target="_blank">
+                            <img src="{{ expense.receipt_image.url }}" alt="Receipt" 
+                                class="max-w-full h-auto max-h-96 hover:opacity-90 transition">
+                        </a>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">📎 Click image to view full size</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <form method="POST" class="space-y-5">
+                {% csrf_token %}
+                
+                <div class="space-y-2">
+                    <label for="comments" class="block text-sm font-medium text-gray-700">
+                        💬 Comments (Optional)
+                    </label>
+                    <textarea name="comments" id="comments" rows="4"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        placeholder="Add any comments or feedback about this expense..."></textarea>
+                    <p class="text-xs text-gray-500">Provide feedback or reason for your decision</p>
+                </div>
+
+                <div class="flex items-center space-x-4 pt-4">
+                    <button type="submit" name="action" value="approve"
+                        class="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-6 rounded-lg hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200 font-semibold shadow-lg">
+                        ✅ Approve
+                    </button>
+                    <button type="submit" name="action" value="reject"
+                        class="flex-1 bg-gradient-to-r from-red-600 to-rose-600 text-white py-3 px-6 rounded-lg hover:from-red-700 hover:to-rose-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition duration-200 font-semibold shadow-lg">
+                        ❌ Reject
+                    </button>
+                    <a href="{% url 'manager_dashboard' %}"
+                        class="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-300 transition duration-200 font-semibold text-center">
+                        🔙 Back
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

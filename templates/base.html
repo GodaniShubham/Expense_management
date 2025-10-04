@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SpendSensei – Expense Management System{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-down {
+            animation: slideDown 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-inter antialiased text-gray-800">
+
+    {% if user.is_authenticated %}
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Left section -->
+                <div class="flex items-center space-x-10">
+                    <a href="{% url 'dashboard' %}" class="flex items-center">
+                        <span class="text-2xl font-semibold text-gray-900 tracking-tight">SpendSensei</span>
+                    </a>
+
+                    <!-- Navigation Links -->
+                    <div class="hidden sm:flex sm:space-x-6">
+                        <a href="{% url 'dashboard' %}" 
+                           class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition">
+                            Dashboard
+                        </a>
+
+                        {% if user.role == 'admin' %}
+                        <a href="{% url 'create_employee' %}" 
+                           class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition">
+                            Add Employee
+                        </a>
+                        <a href="{% url 'create_approval_rule' %}" 
+                           class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition">
+                            Approval Rules
+                        </a>
+                        {% endif %}
+
+                        <a href="{% url 'submit_expense' %}" 
+                           class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition">
+                            Submit Expense
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right section -->
+                <div class="flex items-center space-x-5">
+                    <div class="text-sm text-gray-700">
+                        <span class="font-medium text-gray-900">{{ user.username }}</span>
+                        <span class="ml-2 px-2 py-1 text-xs rounded-md border
+                            {% if user.role == 'admin' %}
+                                border-gray-400 bg-gray-100 text-gray-700
+                            {% elif user.role == 'manager' %}
+                                border-gray-400 bg-gray-100 text-gray-700
+                            {% else %}
+                                border-gray-300 bg-gray-50 text-gray-700
+                            {% endif %}">
+                            {{ user.role|title }}
+                        </span>
+                    </div>
+                    <a href="{% url 'logout' %}" 
+                       class="px-4 py-2 text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 rounded-md transition">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        {% for message in messages %}
+        <div class="animate-slide-down mb-4 p-4 rounded-lg 
+            {% if message.tags == 'success' %}
+                bg-emerald-50 border border-emerald-200 text-emerald-800
+            {% elif message.tags == 'error' %}
+                bg-red-50 border border-red-200 text-red-800
+            {% elif message.tags == 'warning' %}
+                bg-amber-50 border border-amber-200 text-amber-800
+            {% else %}
+                bg-gray-50 border border-gray-200 text-gray-700
+            {% endif %}">
+            <div class="flex items-center space-x-3">
+                <p class="font-medium">{{ message }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
+            <p class="text-sm text-gray-500">
+                © 2025 <span class="font-semibold text-gray-800">SpendSensei</span> – Smarter Expense Management
+            </p>
+        </div>
+    </footer>
+
+    {% block extra_js %}
+    {% endblock %}
+</body>
+</html>

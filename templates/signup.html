@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up - SpendSensei{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-blue-50 py-16">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300 p-8 space-y-6 border border-gray-100">
+        <div class="text-center">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">Create Your Account</h1>
+            <p class="text-gray-600 text-sm">Join SpendSensei and manage your company’s expenses smarter</p>
+        </div>
+
+        <form method="POST" class="space-y-4" id="signupForm">
+            {% csrf_token %}
+            
+            <!-- Company Name -->
+            <div class="space-y-1">
+                <label for="company_name" class="block text-sm font-medium text-gray-700">
+                    Company Name
+                </label>
+                <input type="text" name="company_name" id="company_name" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    placeholder="Enter your company name">
+            </div>
+
+            <!-- Country -->
+            <div class="space-y-1">
+                <label for="country" class="block text-sm font-medium text-gray-700">
+                    Country
+                </label>
+                <select name="country" id="country" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    <option value="">Select a country</option>
+                </select>
+            </div>
+
+            <!-- Currency -->
+            <div class="space-y-1">
+                <label for="currency" class="block text-sm font-medium text-gray-700">
+                    Currency
+                </label>
+                <select name="currency" id="currency" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    <option value="">Select a currency</option>
+                </select>
+            </div>
+
+            <!-- Role -->
+            <div class="space-y-1">
+                <label for="role" class="block text-sm font-medium text-gray-700">
+                    Role
+                </label>
+                <select name="role" id="role" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    <option value="">Select a role</option>
+                    <option value="employee">Employee</option>
+                    <option value="manager">Manager</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+            <!-- Username -->
+            <div class="space-y-1">
+                <label for="username" class="block text-sm font-medium text-gray-700">
+                    Username
+                </label>
+                <input type="text" name="username" id="username" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    placeholder="Choose a username">
+            </div>
+
+            <!-- Email -->
+            <div class="space-y-1">
+                <label for="email" class="block text-sm font-medium text-gray-700">
+                    Email Address
+                </label>
+                <input type="email" name="email" id="email" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    placeholder="your.email@company.com">
+            </div>
+
+            <!-- Password -->
+            <div class="space-y-1">
+                <label for="password" class="block text-sm font-medium text-gray-700">
+                    Password
+                </label>
+                <input type="password" name="password" id="password" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    placeholder="Create a strong password" minlength="6">
+            </div>
+
+            <!-- Submit -->
+            <button type="submit"
+                class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 font-semibold shadow-md">
+                Sign Up
+            </button>
+        </form>
+
+        <div class="text-center pt-4 border-t border-gray-200">
+            <p class="text-sm text-gray-600">
+                Already have an account?
+                <a href="{% url 'login' %}" class="text-blue-600 hover:text-blue-800 font-medium">Sign in</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    const countrySelect = document.getElementById('country');
+    const currencySelect = document.getElementById('currency');
+
+    try {
+        const countryResponse = await fetch('https://restcountries.com/v3.1/all?fields=name,currencies');
+        const countries = await countryResponse.json();
+        const sortedCountries = countries.sort((a, b) => a.name.common.localeCompare(b.name.common));
+        const currencySet = new Set();
+
+        sortedCountries.forEach(country => {
+            const option = document.createElement('option');
+            option.value = country.name.common;
+            option.textContent = country.name.common;
+            countrySelect.appendChild(option);
+            if (country.currencies) {
+                Object.keys(country.currencies).forEach(code => currencySet.add(code));
+            }
+        });
+
+        const currencyResponse = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const currencyData = await currencyResponse.json();
+        const exchangeCurrencies = Object.keys(currencyData.rates);
+        const allCurrencies = new Set([...currencySet, ...exchangeCurrencies]);
+
+        Array.from(allCurrencies).sort().forEach(currency => {
+            const option = document.createElement('option');
+            option.value = currency;
+            option.textContent = currency;
+            currencySelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading countries or currencies:', error);
+    }
+});
+</script>
+{% endblock %}

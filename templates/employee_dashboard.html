@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Employee Dashboard - Expense Management{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="bg-gradient-to-r from-green-600 to-teal-600 rounded-xl shadow-lg p-6 text-white">
+        <h1 class="text-3xl font-bold mb-2">👤 My Dashboard</h1>
+        <p class="text-green-100">Track and manage your expense submissions.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total Expenses</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ my_expenses.count }}</p>
+                </div>
+                <div class="text-4xl">📝</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Pending</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">
+                        {% for expense in my_expenses %}{% if expense.status == 'pending' %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}{% empty %}0{% endfor %}
+                    </p>
+                </div>
+                <div class="text-4xl">⏳</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Approved</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">
+                        {% for expense in my_expenses %}{% if expense.status == 'approved' %}{% if forloop.first %}1{% else %}{{ forloop.counter }}{% endif %}{% endif %}{% empty %}0{% endfor %}
+                    </p>
+                </div>
+                <div class="text-4xl">✅</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-end">
+        <a href="{% url 'submit_expense' %}" 
+            class="px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 transition font-semibold shadow-lg transform hover:scale-105">
+            ➕ Submit New Expense
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">📊 My Expenses</h2>
+        
+        {% if my_expenses %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receipt</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for expense in my_expenses %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ expense.category }}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-500">
+                            <div class="max-w-xs truncate">{{ expense.description }}</div>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">
+                            {{ expense.amount }} {{ expense.currency }}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                            {{ expense.expense_date|date:"M d, Y" }}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm">
+                            <span class="px-2 py-1 text-xs rounded-full {% if expense.status == 'approved' %}bg-green-100 text-green-800{% elif expense.status == 'rejected' %}bg-red-100 text-red-800{% elif expense.status == 'pending' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ expense.status|title }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm">
+                            {% if expense.receipt_image %}
+                            <a href="{{ expense.receipt_image.url }}" target="_blank" 
+                                class="text-blue-600 hover:text-blue-800">
+                                📎 View
+                            </a>
+                            {% else %}
+                            <span class="text-gray-400">No receipt</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <div class="text-6xl mb-4">💼</div>
+            <p class="text-gray-500 text-lg mb-4">You haven't submitted any expenses yet.</p>
+            <a href="{% url 'submit_expense' %}" 
+                class="inline-block px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
+                Submit Your First Expense
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit Expense - Expense Management{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">➕ Submit New Expense</h1>
+            <p class="text-gray-600">Fill in the details of your expense claim.</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" id="expenseForm" class="space-y-5">
+            {% csrf_token %}
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h3 class="font-semibold text-blue-900 mb-3 flex items-center">
+                    📸 Quick Receipt Scan
+                </h3>
+                <div class="flex items-center space-x-4">
+                    <input type="file" id="receipt_scan" accept="image/*" class="hidden">
+                    <button type="button" id="scanButton"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                        📷 Scan Receipt with OCR
+                    </button>
+                    <span id="scanStatus" class="text-sm text-gray-600"></span>
+                </div>
+                <p class="text-xs text-blue-700 mt-2">Upload a receipt image to auto-fill expense details</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-2">
+                    <label for="category" class="block text-sm font-medium text-gray-700">
+                        📂 Category <span class="text-red-500">*</span>
+                    </label>
+                    <select name="category" id="category" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition">
+                        <option value="">Select a category</option>
+                        <option value="travel">✈️ Travel</option>
+                        <option value="food">🍽️ Food & Dining</option>
+                        <option value="office">📎 Office Supplies</option>
+                        <option value="entertainment">🎉 Entertainment</option>
+                        <option value="accommodation">🏨 Accommodation</option>
+                        <option value="transport">🚗 Transportation</option>
+                        <option value="other">📋 Other</option>
+                    </select>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="merchant_name" class="block text-sm font-medium text-gray-700">
+                        🏪 Merchant Name
+                    </label>
+                    <input type="text" name="merchant_name" id="merchant_name"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                        placeholder="e.g., Amazon, Starbucks">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-2">
+                    <label for="amount" class="block text-sm font-medium text-gray-700">
+                        💵 Amount <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="amount" id="amount" step="0.01" min="0" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                        placeholder="0.00">
+                </div>
+
+                <div class="space-y-2">
+                    <label for="currency" class="block text-sm font-medium text-gray-700">
+                        💰 Currency <span class="text-red-500">*</span>
+                    </label>
+                    <select name="currency" id="currency" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition">
+                        <option value="">Select currency</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="JPY">JPY</option>
+                        <option value="CAD">CAD</option>
+                        <option value="AUD">AUD</option>
+                        <option value="INR">INR</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label for="expense_date" class="block text-sm font-medium text-gray-700">
+                    📅 Expense Date <span class="text-red-500">*</span>
+                </label>
+                <input type="date" name="expense_date" id="expense_date" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition">
+            </div>
+
+            <div class="space-y-2">
+                <label for="description" class="block text-sm font-medium text-gray-700">
+                    📝 Description <span class="text-red-500">*</span>
+                </label>
+                <textarea name="description" id="description" rows="4" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                    placeholder="Provide details about this expense..."></textarea>
+            </div>
+
+            <div class="space-y-2">
+                <label for="receipt_image" class="block text-sm font-medium text-gray-700">
+                    📎 Receipt Image (Optional)
+                </label>
+                <input type="file" name="receipt_image" id="receipt_image" accept="image/*"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
+                <p class="text-xs text-gray-500">Upload a photo or scan of your receipt</p>
+            </div>
+
+            <div class="flex items-center space-x-4 pt-4">
+                <button type="submit"
+                    class="flex-1 bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 px-6 rounded-lg hover:from-green-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200 font-semibold shadow-lg">
+                    ✅ Submit Expense
+                </button>
+                <a href="{% url 'employee_dashboard' %}"
+                    class="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-300 transition duration-200 font-semibold text-center">
+                    ❌ Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const scanButton = document.getElementById('scanButton');
+        const receiptScan = document.getElementById('receipt_scan');
+        const scanStatus = document.getElementById('scanStatus');
+        
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('expense_date').value = today;
+        document.getElementById('expense_date').max = today;
+        
+        scanButton.addEventListener('click', function() {
+            receiptScan.click();
+        });
+        
+        receiptScan.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            scanStatus.textContent = '⏳ Scanning receipt...';
+            scanStatus.className = 'text-sm text-blue-600';
+            
+            const formData = new FormData();
+            formData.append('receipt', file);
+            
+            try {
+                const response = await fetch('/api/ocr-scan/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.amount) document.getElementById('amount').value = data.amount;
+                    if (data.date) document.getElementById('expense_date').value = data.date;
+                    if (data.merchant_name) document.getElementById('merchant_name').value = data.merchant_name;
+                    if (data.description) document.getElementById('description').value = data.description;
+                    
+                    scanStatus.textContent = '✅ Receipt scanned successfully!';
+                    scanStatus.className = 'text-sm text-green-600';
+                    
+                    setTimeout(() => {
+                        scanStatus.textContent = '';
+                    }, 3000);
+                } else {
+                    throw new Error('Scan failed');
+                }
+            } catch (error) {
+                scanStatus.textContent = '❌ Scan failed. Please enter details manually.';
+                scanStatus.className = 'text-sm text-red-600';
+                
+                setTimeout(() => {
+                    scanStatus.textContent = '';
+                }, 3000);
+            }
+        });
+    });
+</script>
+{% endblock %}
